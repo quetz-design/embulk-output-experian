@@ -133,14 +133,16 @@ module Embulk
 
       def upload_csv(csv_path)
         begin
+          Embulk.logger.info "params: #{task[:csvfile_id]}, #{task[:unique_name]}, #{params.id}, #{task[:title]}"
           Embulk.logger.info "csv: #{csv_path}"
           File.open(csv_path) do |csv|
             params = {
               login_id: task[:login_id],
               password: task[:password],
-              FILE: csv,
               id: task[:csvfile_id],
               title: task[:unique_name],
+              FILE: csv,
+              request_id: task[:csvfile_id],
               post_use_utf8: true,
             }
             upload_url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
@@ -148,8 +150,8 @@ module Embulk
               params[:list_use_utf8] = "utf-8"
             end
 
-            Embulk.logger.info "params: #{task[:csvfile_id]}, #{task[:unique_name]}, #{params.id}, #{task[:title]}"
 
+            Embulk.logger.info "csv: #{csv_path}"
             response = httpclient.post(upload_url, params)
             handle_error(response)
           end
