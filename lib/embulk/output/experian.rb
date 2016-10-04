@@ -139,6 +139,8 @@ module Embulk
               login_id: task[:login_id],
               password: task[:password],
               FILE: csv,
+              id: task[:csvfile_id],
+              title: task[:unique_name],
               post_use_utf8: true,
             }
             upload_url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
