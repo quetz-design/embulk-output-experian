@@ -144,7 +144,7 @@ module Embulk
               post_use_utf8: true,
             }
             upload_url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
-
+            p params
             if task[:encoding] == "utf-8"
               params[:list_use_utf8] = "utf-8"
             end
