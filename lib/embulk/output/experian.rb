@@ -142,8 +142,7 @@ module Embulk
               id: task[:csvfile_id],
               title: task[:unique_name],
               FILE: csv,
-              request_id: task[:csvfile_id],
-              post_use_utf8: true,
+              request_id: task[:csvfile_id]
             }
             upload_url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
             if task[:encoding] == "utf-8"
@@ -174,7 +173,7 @@ module Embulk
       end
 
       def handle_error(response)
-        body = response.body
+        body = response.body.encode!(:encoding=>"shift_jis:utf-8", :invalid=>:replace, :undef=>:replace)
         case response.status
         when 200
           # ok
