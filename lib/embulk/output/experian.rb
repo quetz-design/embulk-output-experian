@@ -92,9 +92,7 @@ module Embulk
 
       def self.upload(task)
         csv_path = union_single_csv_file(task)
-        Embulk.logger.debug "TESTETSET"
         Embulk.logger.debug "Whole CSV file path: #{csv_path}"
-        Embulk.logger.debug "about to start upload list."
         Client.new(task).upload_csv(csv_path)
       ensure
         if task[:cleanup_tmpfiles]
@@ -138,7 +136,6 @@ module Embulk
 
         begin
           Embulk.logger.debug "begin:"
-          Embulk.logger.info "params: #{task[:csvfile_id]}, #{task[:unique_name]}, #{params.id}, #{task[:title]}"
           Embulk.logger.info "csv: #{csv_path}"
           File.open(csv_path) do |csv|
             params = {
@@ -154,8 +151,7 @@ module Embulk
               params[:list_use_utf8] = "utf-8"
             end
 
-
-            Embulk.logger.info "csv: #{csv_path}"
+            Embulk.logger.info "params: #{params[:id]}, #{params[:title]}, #{params[:request_id]}"
             response = httpclient.post(upload_url, params)
             handle_error(response)
           end
