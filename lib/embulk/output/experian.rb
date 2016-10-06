@@ -93,6 +93,7 @@ module Embulk
       def self.upload(task)
         csv_path = union_single_csv_file(task)
         Embulk.logger.debug "Whole CSV file path: #{csv_path}"
+        Embulk.logger.debug "about to start upload list."
         Client.new(task).upload_csv(csv_path)
       ensure
         if task[:cleanup_tmpfiles]
@@ -132,7 +133,10 @@ module Embulk
       end
 
       def upload_csv(csv_path)
+        Embulk.logger.debug "inside upload_csv"
+
         begin
+          Embulk.logger.debug "begin:"
           Embulk.logger.info "params: #{task[:csvfile_id]}, #{task[:unique_name]}, #{params.id}, #{task[:title]}"
           Embulk.logger.info "csv: #{csv_path}"
           File.open(csv_path) do |csv|
@@ -174,6 +178,7 @@ module Embulk
 
       def handle_error(response)
         body = response.body.encode!(:encoding=>"shift_jis:utf-8", :invalid=>:replace, :undef=>:replace)
+        Embulk.logger.debug body
         case response.status
         when 200
           # ok
