@@ -92,6 +92,7 @@ module Embulk
 
       def self.upload(task)
         csv_path = union_single_csv_file(task)
+        Embulk.logger.debug "TESTETSET"
         Embulk.logger.debug "Whole CSV file path: #{csv_path}"
         Embulk.logger.debug "about to start upload list."
         Client.new(task).upload_csv(csv_path)
