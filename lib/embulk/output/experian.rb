@@ -109,14 +109,17 @@ module Embulk
       def self.check(task)
         Embulk.logger.debug "checking"
         Client.new(task).check()
+      end
 
       def self.delivery_test(task)
         Embulk.logger.debug "checking"
         Client.new(task).delivery_test()
+      end
 
       def self.reserve(task)
         Embulk.logger.debug "checking"
         Client.new(task).reserve()
+      end
 
       def self.union_single_csv_file(task)
         prefix = Pathname.new(task[:tmpdir]).join(task[:tmpfile_prefix])
@@ -262,7 +265,7 @@ module Embulk
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
-          else if body.include?("STATUS=CHECK") || body.include?("STATUS=RESERVED")
+          elsif body.include?("STATUS=CHECK") || body.include?("STATUS=RESERVED")
             raise StatusError
           else
             raise "[#{response.status}] #{body}"
