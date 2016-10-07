@@ -166,8 +166,9 @@ module Embulk
               login_id: task[:login_id],
               password: task[:password],
               id: task[:csvfile_id],
-              title: title.encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace),
-              FILE: csv
+              title: title,
+              FILE: csv,
+              post_use_utf8: 'true'
             }
             if task[:encoding] == "utf-8"
               params[:list_use_utf8] = "utf-8"
@@ -192,7 +193,8 @@ module Embulk
           params = {
             login_id: task[:login_id],
             password: task[:password],
-            id: task[:csvfile_id]
+            id: task[:csvfile_id],
+            post_use_utf8: 'true'
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
           response = httpclient.post(url, params)
@@ -211,7 +213,8 @@ module Embulk
             password: task[:password],
             draft_id: task[:draft_id],
             test_address: task[:test_address],
-            test_subject_prefix: task[:test_subject_prefix].encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace)
+            test_subject_prefix: task[:test_subject_prefix],
+            post_use_utf8: 'true'
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
           response = httpclient.post(url, params)
@@ -230,7 +233,7 @@ module Embulk
             login_id: task[:login_id],
             password: task[:password],
             draft_id: task[:draft_id],
-            unique_name: title.encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace),
+            unique_name: title,
             from_address: task[:from_address],
             csvfile_id: task[:csvfile_id],
           }
