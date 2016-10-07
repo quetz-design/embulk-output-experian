@@ -12,6 +12,7 @@ module Embulk
 
       def self.transaction(config, schema, count, &control)
         @header = schema.collect { |s| s[:name] }
+        jst_time = Time.now.utc + (60 * 60 * 9)
 
         # configuration code:
         task = {
@@ -25,8 +26,17 @@ module Embulk
           encoding: config.param("encoding", :string, default: "shift_jis"),
           csvfile_id: config.param("csvfile_id", :integer),
           draft_id: config.param("draft_id", :integer),
-          book_time: config.param("book_time", :string),
           unique_name: config.param("unique_name", :string, default: "reserved by plugin.")
+          test_address: config.param("test_address", :string),
+          test_subject_prefix: config.param("test_subject_prefix", :string, default: "[TEST]"),
+          from_address: config.param("from_address", :string)
+
+          jst_time: jst_time,
+          book_year: jst_time.year,
+          book_month: jst_time.month,
+          book_day: jst_time.day,
+          book_hour: config.param("book_hour", :integer),
+          book_min: config.param("book_min", :integer)
         }
 
         # resumable output:
@@ -37,9 +47,7 @@ module Embulk
         task_reports = yield(task)
 
         upload(task)
-        sleep 15
         check(task)
-        sleep 15
         reserve(task)
 
         next_config_diff = {}
@@ -95,7 +103,7 @@ module Embulk
       def self.upload(task)
         csv_path = union_single_csv_file(task)
         Embulk.logger.debug "Whole CSV file path: #{csv_path}"
-        Client.new(task).upload_csv(csv_path)
+        Client.new(task).upload(csv_path)
       ensure
         if task[:cleanup_tmpfiles]
           tmp_path = Pathname.new(task[:tmpdir]).join(task[:tmpfile_prefix])
@@ -107,17 +115,17 @@ module Embulk
       end
 
       def self.check(task)
-        Embulk.logger.debug "checking"
+        Embulk.logger.info "Checking uploaded csv. id:#{task[:csvfile_id]}"
         Client.new(task).check()
       end
 
-      def self.delivery_test(task)
-        Embulk.logger.debug "checking"
-        Client.new(task).delivery_test()
+      def self.deliveryTest(task)
+        Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M %Z')}"
+        Client.new(task).deliveryTest()
       end
 
       def self.reserve(task)
-        Embulk.logger.debug "checking"
+        Embulk.logger.info "Reserving mail. draft_id:#{task[:draft_id]} to_list:#{task[:csvfile_id]} from:#{task[:from_address]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M %Z')}"
         Client.new(task).reserve()
       end
 
@@ -148,22 +156,23 @@ module Embulk
         @task = task
       end
 
-      def upload_csv(csv_path)
+      def upload(csv_path)
         begin
           Embulk.logger.info "csv: #{csv_path}"
           File.open(csv_path) do |csv|
+            title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M %Z')}"
+
             params = {
               login_id: task[:login_id],
               password: task[:password],
               id: task[:csvfile_id],
-              title: task[:unique_name],
-              FILE: csv,
-              request_id: task[:csvfile_id]
+              title: title,
+              FILE: csv
             }
-            url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
             if task[:encoding] == "utf-8"
               params[:list_use_utf8] = "utf-8"
             end
+            url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
 
             response = httpclient.post(url, params)
             handle_error(response)
@@ -173,35 +182,30 @@ module Embulk
           # > Request frequency
           # > The system will not receive the same type of request within 15 seconds (an error will be returned). Please allow a 15 second wait time before requests.
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          sleep 15
+          wait_for_retry
           retry
         end
       end
 
       def check()
         begin
-          Embulk.logger.info "checking csvfile_id: #{task[:csvfile_id]}"
-
           params = {
             login_id: task[:login_id],
             password: task[:password],
-            id: task[:csvfile_id],
-            request_id: task[:csvfile_id]
+            id: task[:csvfile_id]
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
           response = httpclient.post(url, params)
           handle_error(response)
         rescue TooFrequencyError
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          sleep 15
+          wait_for_retry
           retry
         end
       end
 
-      def delivery_test()
+      def deliveryTest()
         begin
-          Embulk.logger.info "testing delivery test: #{task[:draft_id]}"
-
           params = {
             login_id: task[:login_id],
             password: task[:password],
@@ -214,27 +218,20 @@ module Embulk
           handle_error(response)
         rescue TooFrequencyError
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          sleep 15
+          wait_for_retry
           retry
         end
       end
 
       def reserve()
         begin
-          Embulk.logger.info "reserve draft mail: #{task[:draft_id]}"
-          book_hour = task[:book_time].split(':')[0].to_i
-          book_min = task[:book_time].split(':')[1].to_i
+          title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M %Z')}"
           params = {
             login_id: task[:login_id],
             password: task[:password],
             draft_id: task[:draft_id],
-            unique_name: task[:unique_name],
+            unique_name: title,
             from_address: task[:from_address],
-            book_year: Time.now.year,
-            book_month: Time.now.month,
-            book_day: Time.now.day,
-            book_hour: book_hour,
-            book_min: book_min,
             csvfile_id: task[:csvfile_id],
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
@@ -242,26 +239,27 @@ module Embulk
           handle_error(response)
         rescue TooFrequencyError
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          sleep 15
+          wait_for_retry
           retry
         end
       end
 
       private
 
+      def wait_for_retry
+          sleep 15
+      end
+
       def httpclient
         httpclient = HTTPClient.new
-        # httpclient.debug_dev = STDOUT # for debugging
         httpclient
       end
 
       def handle_error(response)
         body = response.body.encode!(:encoding=>"shift_jis:utf-8", :invalid=>:replace, :undef=>:replace)
-        Embulk.logger.debug body
         case response.status
         when 200
           # ok
-          Embulk.logger.info "checking list was completed successfully."
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
