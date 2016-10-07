@@ -26,10 +26,10 @@ module Embulk
           encoding: config.param("encoding", :string, default: "shift_jis"),
           csvfile_id: config.param("csvfile_id", :integer),
           draft_id: config.param("draft_id", :integer),
-          unique_name: config.param("unique_name", :string, default: "reserved by plugin.")
+          unique_name: config.param("unique_name", :string, default: "reserved by plugin."),
           test_address: config.param("test_address", :string),
           test_subject_prefix: config.param("test_subject_prefix", :string, default: "[TEST]"),
-          from_address: config.param("from_address", :string)
+          from_address: config.param("from_address", :string),
 
           jst_time: jst_time,
           book_year: jst_time.year,
