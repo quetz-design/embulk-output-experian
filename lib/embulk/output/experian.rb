@@ -166,7 +166,7 @@ module Embulk
               login_id: task[:login_id],
               password: task[:password],
               id: task[:csvfile_id],
-              title: title,
+              title: title.encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace),
               FILE: csv
             }
             if task[:encoding] == "utf-8"
@@ -211,7 +211,7 @@ module Embulk
             password: task[:password],
             draft_id: task[:draft_id],
             test_address: task[:test_address],
-            test_subject_prefix: task[:test_subject_prefix],
+            test_subject_prefix: task[:test_subject_prefix].encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace)
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
           response = httpclient.post(url, params)
@@ -230,7 +230,7 @@ module Embulk
             login_id: task[:login_id],
             password: task[:password],
             draft_id: task[:draft_id],
-            unique_name: title,
+            unique_name: title.encode!(:encoding=>"utf-8:shift_jis", :invalid=>:replace, :undef=>:replace),
             from_address: task[:from_address],
             csvfile_id: task[:csvfile_id],
           }
