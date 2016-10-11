@@ -272,11 +272,13 @@ module Embulk
       def handle_error(response)
         body = response.body
         case response.status
+        when 200
+          if body.include?("STATUS=CHECK")
+            raise StatusCheckError
+          end
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
-          elsif body.include?("STATUS=CHECK")
-            raise StatusCheckError
           end
         end
         Embulk.logger.info "[#{response.status}] #{body}"
