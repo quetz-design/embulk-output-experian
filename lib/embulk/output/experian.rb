@@ -236,6 +236,7 @@ module Embulk
             unique_name: title,
             from_address: task[:from_address],
             csvfile_id: task[:csvfile_id],
+            post_use_utf8: 'true'
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
           response = httpclient.post(url, params)
