@@ -257,6 +257,17 @@ module Embulk
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
           wait_for_retry
           retry
+        rescue ListCheckError
+          wait_for_retry
+          params = {
+            login_id: task[:login_id],
+            password: task[:password],
+            id: task[:csvfile_id],
+            post_use_utf8: 'true'
+          }
+          url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
+          response = httpclient.post(url, params)
+          handle_error(response)
         end
       end
 
@@ -281,6 +292,8 @@ module Embulk
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
+          elsif body.include?("ERROR=送信リストが正しく設定されていません")
+            raise ListCheckError
           else
             raise Embulk.logger.info "[#{response.status}] #{body}"
           end
@@ -291,5 +304,6 @@ module Embulk
 
     class TooFrequencyError < StandardError; end
     class StatusCheckError < StandardError; end
+    class ListCheckError < StandardError; end
   end
 end
