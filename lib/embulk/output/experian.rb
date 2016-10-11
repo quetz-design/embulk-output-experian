@@ -241,13 +241,13 @@ module Embulk
             draft_id: task[:draft_id],
             unique_name: title,
             from_address: task[:from_address],
-            csvfile_id: task[:csvfile_id],
             book_year: task[:book_year],
             book_month: task[:book_month],
             book_day: task[:book_day],
             book_hour: task[:book_hour],
             book_min: task[:book_min],
-            post_use_utf8: 'true'
+            post_use_utf8: 'true',
+            csvfile_id: task[:csvfile_id].to_s,
           }
           print params
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
@@ -255,10 +255,6 @@ module Embulk
           handle_error(response)
         rescue TooFrequencyError
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          wait_for_retry
-          retry
-        rescue ListCheckError
-          Embulk.logger.warn "Got unknown list check error. retry after 15 seconds"
           wait_for_retry
           retry
         end
@@ -285,8 +281,6 @@ module Embulk
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
-          elsif body.include?("ERROR=送信リストが正しく設定されていません")
-            raise ListCheckError
           else
             raise Embulk.logger.info "[#{response.status}] #{body}"
           end
