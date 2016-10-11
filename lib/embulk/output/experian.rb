@@ -279,7 +279,7 @@ module Embulk
             raise StatusCheckError
           end
         end
-        raise "[#{response.status}] #{body}"
+        Embulk.logger.info "[#{response.status}] #{body}"
       end
     end
 
