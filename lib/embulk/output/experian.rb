@@ -258,16 +258,9 @@ module Embulk
           wait_for_retry
           retry
         rescue ListCheckError
+          Embulk.logger.warn "Got unknown list check error. retry after 15 seconds"
           wait_for_retry
-          params = {
-            login_id: task[:login_id],
-            password: task[:password],
-            id: task[:csvfile_id],
-            post_use_utf8: 'true'
-          }
-          url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
-          response = httpclient.post(url, params)
-          handle_error(response)
+          retry
         end
       end
 
