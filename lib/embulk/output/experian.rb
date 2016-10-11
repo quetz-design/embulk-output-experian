@@ -259,15 +259,17 @@ module Embulk
       end
 
       def handle_error(response)
-        body = response.body.encode!(:encoding=>"shift_jis:utf-8", :invalid=>:replace, :undef=>:replace)
+        body = response.body
         case response.status
         when 200
           # ok
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
-          elsif body.include?("STATUS=CHECK") || body.include?("STATUS=RESERVED")
+          elsif body.include?("STATUS=CHECK")
             raise StatusError
+          elsif body.include?("STATUS=RESERVED")
+
           else
             raise "[#{response.status}] #{body}"
           end
