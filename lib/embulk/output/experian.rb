@@ -48,6 +48,7 @@ module Embulk
 
         upload(task)
         check(task)
+        delivery_test(task)
         reserve(task)
 
         next_config_diff = {}
@@ -120,9 +121,9 @@ module Embulk
         Client.new(task).check()
       end
 
-      def self.deliveryTest(task)
+      def self.delivery_test(task)
         Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M %Z')}"
-        Client.new(task).deliveryTest()
+        Client.new(task).delivery_test()
       end
 
       def self.reserve(task)
@@ -211,7 +212,7 @@ module Embulk
         end
       end
 
-      def deliveryTest()
+      def delivery_test()
         begin
           params = {
             login_id: task[:login_id],
@@ -248,6 +249,7 @@ module Embulk
             book_min: task[:book_min],
             post_use_utf8: 'true'
           }
+          print params
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
           response = httpclient.post(url, params)
           handle_error(response)
@@ -279,6 +281,8 @@ module Embulk
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
+          else
+            raise Embulk.logger.info "[#{response.status}] #{body}"
           end
         end
         Embulk.logger.info "[#{response.status}] #{body}"
