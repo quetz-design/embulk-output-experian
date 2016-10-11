@@ -104,6 +104,7 @@ module Embulk
         csv_path = union_single_csv_file(task)
         Embulk.logger.debug "Whole CSV file path: #{csv_path}"
         Client.new(task).upload(csv_path)
+        Embulk.logger.info "Uploaded csv. id:#{task[:csvfile_id]}"
       ensure
         if task[:cleanup_tmpfiles]
           tmp_path = Pathname.new(task[:tmpdir]).join(task[:tmpfile_prefix])
@@ -203,6 +204,10 @@ module Embulk
           Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
           wait_for_retry
           retry
+        rescue StatusCheckError
+          Embulk.logger.warn "Got Status check error. retry after 15 seconds"
+          wait_for_retry
+          retry
         end
       end
 
@@ -267,25 +272,18 @@ module Embulk
       def handle_error(response)
         body = response.body
         case response.status
-        when 200
-          # ok
         when 400
           if body.include?("ERROR=アクセス間隔が短すぎます。時間を置いて再度実行してください")
             raise TooFrequencyError
           elsif body.include?("STATUS=CHECK")
-            raise StatusError
-          elsif body.include?("STATUS=RESERVED")
-
-          else
-            raise "[#{response.status}] #{body}"
+            raise StatusCheckError
           end
-        else
-          raise "[#{response.status}] #{body}"
         end
+        raise "[#{response.status}] #{body}"
       end
     end
 
     class TooFrequencyError < StandardError; end
-    class StatusError < StandardError; end
+    class StatusCheckError < StandardError; end
   end
 end
