@@ -268,6 +268,7 @@ module Embulk
 
       def httpclient
         httpclient = HTTPClient.new
+        httpclient.debug_dev = STDOUT # for debugging
         httpclient
       end
 
