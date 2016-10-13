@@ -235,32 +235,19 @@ module Embulk
       def reserve()
         begin
           title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
-          # params = {
-          #   login_id: task[:login_id],
-          #   password: task[:password],
-          #   draft_id: task[:draft_id],
-          #   unique_name: title,
-          #   from_address: task[:from_address],
-          #   book_year: task[:book_year],
-          #   book_month: task[:book_month],
-          #   book_day: task[:book_day],
-          #   book_hour: task[:book_hour],
-          #   book_min: task[:book_min],
-          #   post_use_utf8: 'true',
-          #   csvfile_id: task[:csvfile_id]
-          # }
           params = {
             login_id: task[:login_id],
             password: task[:password],
             draft_id: task[:draft_id],
+            unique_name: title,
             from_address: task[:from_address],
             book_year: task[:book_year],
             book_month: task[:book_month],
             book_day: task[:book_day],
             book_hour: task[:book_hour],
             book_min: task[:book_min],
-            post_use_utf8: 'true',
-            csvfile_id: 101
+            # post_use_utf8: 'true',
+            csvfile_id: task[:csvfile_id]
           }
           print params
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
@@ -286,7 +273,7 @@ module Embulk
       end
 
       def handle_error(response)
-        body = response.body
+        body = response.body.encode!(:encoding=>"shift_jis:utf-8", :invalid=>:replace, :undef=>:replace)
         case response.status
         when 200
           if body.include?("STATUS=CHECK")
