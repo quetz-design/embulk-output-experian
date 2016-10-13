@@ -264,7 +264,7 @@ module Embulk
 
       def httpclient
         httpclient = HTTPClient.new
-        httpclient.debug_dev = STDOUT # for debugging
+        # httpclient.debug_dev = STDOUT # for debugging
         httpclient
       end
 
@@ -288,6 +288,5 @@ module Embulk
 
     class TooFrequencyError < StandardError; end
     class StatusCheckError < StandardError; end
-    class ListCheckError < StandardError; end
   end
 end
