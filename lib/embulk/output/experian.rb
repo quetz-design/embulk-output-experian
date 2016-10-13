@@ -46,9 +46,9 @@ module Embulk
         FileUtils.mkdir_p task[:tmpdir]
         task_reports = yield(task)
 
-        # upload(task)
-        # check(task)
-        # delivery_test(task)
+        upload(task)
+        check(task)
+        delivery_test(task)
         reserve(task)
 
         next_config_diff = {}
