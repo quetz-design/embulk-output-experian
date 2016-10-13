@@ -122,12 +122,12 @@ module Embulk
       end
 
       def self.delivery_test(task)
-        Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+        Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
         Client.new(task).delivery_test()
       end
 
       def self.reserve(task)
-        Embulk.logger.info "Reserving mail. draft_id:#{task[:draft_id]} to_list:#{task[:csvfile_id]} from:#{task[:from_address]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+        Embulk.logger.info "Reserving mail. draft_id:#{task[:draft_id]} to_list:#{task[:csvfile_id]} from:#{task[:from_address]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
         Client.new(task).reserve()
       end
 
@@ -162,7 +162,7 @@ module Embulk
         begin
           Embulk.logger.info "csv: #{csv_path}"
           File.open(csv_path) do |csv|
-            title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+            title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
 
             params = {
               login_id: task[:login_id],
@@ -231,7 +231,7 @@ module Embulk
 
       def reserve()
         begin
-          title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at: #{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+          title = "#{task[:unique_name]} for draft_id:#{task[:draft_id]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
           params = {
             login_id: task[:login_id],
             password: task[:password],
