@@ -169,8 +169,7 @@ module Embulk
               password: task[:password],
               id: task[:csvfile_id],
               title: title,
-              FILE: csv,
-              post_use_utf8: 'true'
+              FILE: csv
             }
             if task[:encoding] == "utf-8"
               params[:list_use_utf8] = "utf-8"
@@ -195,8 +194,7 @@ module Embulk
           params = {
             login_id: task[:login_id],
             password: task[:password],
-            id: task[:csvfile_id],
-            post_use_utf8: 'true'
+            id: task[:csvfile_id]
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
           response = httpclient.post(url, params)
@@ -219,8 +217,7 @@ module Embulk
             password: task[:password],
             draft_id: task[:draft_id],
             test_address: task[:test_address],
-            test_subject_prefix: task[:test_subject_prefix],
-            post_use_utf8: 'true'
+            test_subject_prefix: task[:test_subject_prefix]
           }
           url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
           response = httpclient.post(url, params)
@@ -246,7 +243,6 @@ module Embulk
             book_day: task[:book_day],
             book_hour: task[:book_hour],
             book_min: task[:book_min],
-            # post_use_utf8: 'true',
             csvfile_id: task[:csvfile_id]
           }
           print params
