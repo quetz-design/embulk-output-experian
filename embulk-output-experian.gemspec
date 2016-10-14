@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "embulk-output-experian"
-  spec.version       = "0.1.1.23"
+  spec.version       = "0.1.1.24"
   spec.authors       = ["Kouta Yoshimura"]
   spec.summary       = "Experian output plugin for Embulk"
   spec.description   = "Upload records and reserve mail delivery with Experian."
