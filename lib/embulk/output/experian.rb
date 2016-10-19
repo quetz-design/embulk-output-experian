@@ -27,8 +27,6 @@ module Embulk
           csvfile_id: config.param("csvfile_id", :integer),
           draft_id: config.param("draft_id", :integer),
           unique_name: config.param("unique_name", :string, default: "reserved by plugin."),
-          test_address: config.param("test_address", :string),
-          test_subject_prefix: config.param("test_subject_prefix", :string, default: "[TEST]"),
           from_address: config.param("from_address", :string),
 
           jst_time: jst_time,
@@ -48,7 +46,7 @@ module Embulk
 
         upload(task)
         check(task)
-        delivery_test(task)
+        # delivery_test(task)
         reserve(task)
 
         next_config_diff = {}
@@ -121,10 +119,10 @@ module Embulk
         Client.new(task).check()
       end
 
-      def self.delivery_test(task)
-        Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
-        Client.new(task).delivery_test()
-      end
+      # def self.delivery_test(task)
+      #   Embulk.logger.info "Delivering test mail. draft_id:#{task[:draft_id]} to:#{task[:test_address]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+      #   Client.new(task).delivery_test()
+      # end
 
       def self.reserve(task)
         Embulk.logger.info "Reserving mail. draft_id:#{task[:draft_id]} to_list:#{task[:csvfile_id]} from:#{task[:from_address]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
@@ -210,24 +208,24 @@ module Embulk
         end
       end
 
-      def delivery_test()
-        begin
-          params = {
-            login_id: task[:login_id],
-            password: task[:password],
-            draft_id: task[:draft_id],
-            test_address: task[:test_address],
-            test_subject_prefix: task[:test_subject_prefix].encode!("shift_jis", :invalid=>:replace, :undef=>:replace),
-          }
-          url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
-          response = httpclient.post(url, params)
-          handle_error(response)
-        rescue TooFrequencyError
-          Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-          wait_for_retry
-          retry
-        end
-      end
+      # def delivery_test()
+      #   begin
+      #     params = {
+      #       login_id: task[:login_id],
+      #       password: task[:password],
+      #       draft_id: task[:draft_id],
+      #       test_address: task[:test_address],
+      #       test_subject_prefix: task[:test_subject_prefix].encode!("shift_jis", :invalid=>:replace, :undef=>:replace),
+      #     }
+      #     url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
+      #     response = httpclient.post(url, params)
+      #     handle_error(response)
+      #   rescue TooFrequencyError
+      #     Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
+      #     wait_for_retry
+      #     retry
+      #   end
+      # end
 
       def reserve()
         begin
