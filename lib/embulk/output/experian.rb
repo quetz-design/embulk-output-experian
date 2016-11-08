@@ -229,7 +229,7 @@ module Embulk
 
       def reserve()
         begin
-          title = "#{task[:unique_name]} from draft_id:#{task[:draft_id]} target_id:#{task[:csv_file_id]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
+          title = "#{task[:unique_name]} from draft_id:#{task[:draft_id]} target_id:#{task[:csvfile_id]} at:#{task[:jst_time].strftime('%Y-%m-%d %H:%M JST')}"
           params = {
             login_id: task[:login_id],
             password: task[:password],
