@@ -20,6 +20,7 @@ module Embulk
           tmpfile_prefix: config.param("tmpfile_prefix", :string, default: Time.now.strftime('%Y%m%d_%H%M%S_%N_')),
           cleanup_tmpfiles: config.param("cleanup_tmpfiles", :bool, default: true),
 
+          host: config.param("host", :string),
           site_id: config.param("site_id", :string),
           login_id: config.param("login_id", :string),
           password: config.param("password", :string),
@@ -172,7 +173,7 @@ module Embulk
             if task[:encoding] == "utf-8"
               params[:list_use_utf8] = "utf-8"
             end
-            url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/upload.php"
+            url = "https://#{task[:host]}/#{task[:site_id]}/remote/upload.php"
 
             response = httpclient.post(url, params)
             handle_error(response)
@@ -194,7 +195,7 @@ module Embulk
             password: task[:password],
             id: task[:csvfile_id]
           }
-          url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/csvfile_list.php"
+          url = "https://#{task[:host]}/#{task[:site_id]}/remote/csvfile_list.php"
           response = httpclient.post(url, params)
           handle_error(response)
         rescue TooFrequencyError
@@ -207,25 +208,6 @@ module Embulk
           retry
         end
       end
-
-      # def delivery_test()
-      #   begin
-      #     params = {
-      #       login_id: task[:login_id],
-      #       password: task[:password],
-      #       draft_id: task[:draft_id],
-      #       test_address: task[:test_address],
-      #       test_subject_prefix: task[:test_subject_prefix].encode!("shift_jis", :invalid=>:replace, :undef=>:replace),
-      #     }
-      #     url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/delivery_test.php"
-      #     response = httpclient.post(url, params)
-      #     handle_error(response)
-      #   rescue TooFrequencyError
-      #     Embulk.logger.warn "Got 400 error (frequency access). retry after 15 seconds"
-      #     wait_for_retry
-      #     retry
-      #   end
-      # end
 
       def reserve()
         begin
@@ -244,7 +226,7 @@ module Embulk
             csvfile_id: task[:csvfile_id]
           }
           print params
-          url = "https://remote2.rec.mpse.jp/#{task[:site_id]}/remote/article.php"
+          url = "https://#{task[:host]}/#{task[:site_id]}/remote/article.php"
           response = httpclient.post(url, params)
           handle_error(response)
         rescue TooFrequencyError
